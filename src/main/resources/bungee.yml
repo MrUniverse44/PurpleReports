@@ -1,0 +1,7 @@
+name: PurpleReports
+version: '${project.version}'
+main: dev.mruniverse.purplereports.bungee.PurpleReports
+api-version: 1.13
+authors: [ JustJustin ]
+description: Simple Report Plugin
+website: github.com/MrUniverse44/PurpleReports
