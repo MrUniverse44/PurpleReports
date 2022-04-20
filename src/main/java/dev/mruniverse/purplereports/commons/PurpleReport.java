@@ -1,17 +1,19 @@
 package dev.mruniverse.purplereports.commons;
 
 import dev.mruniverse.purplereports.commons.commands.ReportCommand;
+import dev.mruniverse.purplereports.commons.commands.ReportsCommand;
+import dev.mruniverse.purplereports.commons.commands.WatchReportsCommand;
 import dev.mruniverse.purplereports.commons.database.Database;
 import dev.mruniverse.purplereports.commons.database.ReportDatabase;
 import dev.mruniverse.purplereports.handler.PlayerHandler;
 import dev.mruniverse.slimelib.SlimePlatform;
 import dev.mruniverse.slimelib.SlimePlugin;
+import dev.mruniverse.slimelib.control.Control;
 import dev.mruniverse.slimelib.input.InputManager;
 import dev.mruniverse.slimelib.loader.BaseSlimeLoader;
 import dev.mruniverse.slimelib.loader.DefaultSlimeLoader;
 import dev.mruniverse.slimelib.logs.SlimeLogs;
 
-import javax.xml.crypto.Data;
 import java.io.File;
 
 public class PurpleReport<T> implements SlimePlugin<T> {
@@ -47,9 +49,21 @@ public class PurpleReport<T> implements SlimePlugin<T> {
 
         this.database      = new Database<>(this);
 
+        Control commandSettings = getLoader().getFiles().getControl(SlimeFile.COMMANDS);
+
         getLoader().getCommands().register(new ReportCommand<>(
                 this,
-                getLoader().getFiles().getControl(SlimeFile.COMMANDS)
+                commandSettings
+        ));
+
+        getLoader().getCommands().register(new ReportsCommand<>(
+                this,
+                commandSettings
+        ));
+
+        getLoader().getCommands().register(new WatchReportsCommand<>(
+                this,
+                commandSettings
         ));
     }
 

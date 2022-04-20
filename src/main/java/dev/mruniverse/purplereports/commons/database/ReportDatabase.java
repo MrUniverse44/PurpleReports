@@ -19,7 +19,7 @@ public class ReportDatabase {
 
     public <T> void add(Database<T> database, int max, int id, ReportData data) {
         if (reportDataMap.size() >= max) {
-            database.saveReports(reportDataMap);
+            database.saveReports(new HashMap<>(reportDataMap));
 
             reportDataMap.clear();
             userListMap.clear();

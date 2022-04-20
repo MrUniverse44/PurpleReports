@@ -6,6 +6,7 @@ import dev.mruniverse.slimelib.SlimePlatform;
 @SuppressWarnings("unused")
 public enum SlimeFile implements SlimeFiles {
     REPORT("report.yml", "commands", "report.yml"),
+    REPORTS("reports.yml", "commands", "reports.yml"),
     SETTINGS("settings.yml"),
     MYSQL("mysql.yml"),
     COMMANDS("commands.yml"),
