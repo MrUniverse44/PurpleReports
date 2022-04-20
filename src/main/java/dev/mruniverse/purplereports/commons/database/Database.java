@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 
 @SuppressWarnings("unused")
 public class Database<T> {
@@ -83,7 +84,7 @@ public class Database<T> {
         this.reportData = connection.prepareStatement("select * from `reports` where `reportId` = ?");
         this.reportId = connection.prepareStatement("select * from `reports` where `reportedPlayer` = ? and `reporter` = ? and `reason` = ?");
         this.removeReport = connection.prepareStatement("delete from `reports` where `reportId` = ?");
-        this.submitReport = connection.prepareStatement("replace into `reports` values (?,?,?,?)");
+        this.submitReport = connection.prepareStatement("replace into `reports` (reportId, reportedPlayer, reporter, reason) values (?,?,?,?)");
         this.createReport = connection.prepareStatement("insert into `reports` (reportedPlayer, reporter, reason) values (?,?,?)");
     }
 
@@ -150,8 +151,11 @@ public class Database<T> {
             createReport.executeUpdate();
 
             int id = getReportId(reportedUser, author, reason);
+            int max = plugin.getLoader().getFiles().getControl(SlimeFile.SETTINGS).getInt("settings.reports.max-reports-to-clear-cache", 35);
 
             plugin.getReportData().add(
+                    plugin.getDatabase(),
+                    max,
                     id,
                     new ReportData(
                             id,
@@ -162,6 +166,12 @@ public class Database<T> {
             );
         } catch (SQLException e) {
             plugin.getLogs().error("Failed to fetch report data for player " + reportedUser, e);
+        }
+    }
+
+    public void saveReports(Map<Integer, ReportData> reportDataMap) {
+        for (ReportData data : reportDataMap.values()) {
+            saveReportData(data);
         }
     }
 

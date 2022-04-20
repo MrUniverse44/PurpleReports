@@ -2,6 +2,7 @@ package dev.mruniverse.purplereports.commons.commands;
 
 import dev.mruniverse.purplereports.commons.PurpleReport;
 import dev.mruniverse.purplereports.commons.SlimeFile;
+import dev.mruniverse.purplereports.commons.data.ReportData;
 import dev.mruniverse.slimelib.commands.command.Command;
 import dev.mruniverse.slimelib.commands.command.SlimeCommand;
 import dev.mruniverse.slimelib.commands.sender.Sender;
@@ -56,6 +57,13 @@ public class ReportCommand<T> implements SlimeCommand {
         }
 
         if (args.length == 1) {
+
+            for (ReportData data : plugin.getReportData().getReportsFrom(args[0])) {
+                if (data.getAuthor().equalsIgnoreCase(sender.getName())) {
+                    cancelReport(control, sender, args[0]);
+                }
+            }
+
             if (!control.getStatus("allow-use-without-reason")) {
                 for (String message : control.getStringList("error-no-reason")) {
                     sender.sendColoredMessage(
@@ -87,7 +95,7 @@ public class ReportCommand<T> implements SlimeCommand {
                         )
                 );
             }
-            for (String message : control.getStringList("report-notification-without-reason")) {
+            for (String message : control.getColoredStringList("report-notification-without-reason")) {
                 plugin.getPlayerHandler().announceOnly(
                         replace(
                                 message,
@@ -122,7 +130,7 @@ public class ReportCommand<T> implements SlimeCommand {
                     )
             );
         }
-        for (String message : control.getStringList("report-notification-with-reason")) {
+        for (String message : control.getColoredStringList("report-notification-with-reason")) {
             plugin.getPlayerHandler().announceOnly(
                     replace(
                             message,
@@ -133,6 +141,18 @@ public class ReportCommand<T> implements SlimeCommand {
                     "purplereports.admin.report-notification"
             );
 
+        }
+    }
+
+    public void cancelReport(Control control, Sender sender, String reportedUser) {
+        for (String message : control.getStringList("error-already-reported")) {
+            sender.sendColoredMessage(
+                    replace(
+                            message,
+                            reportedUser,
+                            sender.getName()
+                    )
+            );
         }
     }
 
