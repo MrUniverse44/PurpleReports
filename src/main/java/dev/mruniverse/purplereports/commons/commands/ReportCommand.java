@@ -59,40 +59,110 @@ public class ReportCommand<T> implements SlimeCommand {
             if (!control.getStatus("allow-use-without-reason")) {
                 for (String message : control.getStringList("error-no-reason")) {
                     sender.sendColoredMessage(
-                            message
+                            replace(
+                                    message,
+                                    args[0],
+                                    sender.getName()
+                            )
                     );
                 }
                 return;
             }
-            //TODO: REPORT WITHOUT REASON
+
+            String reason = control.getString("default-reason", "Cheating");
+
+            plugin.getDatabase().createReport(
+                    sender.getName(),
+                    args[0],
+                    reason
+            );
+
             for (String message : control.getStringList("reported-successfully-without-reason")) {
                 sender.sendColoredMessage(
-                        message
+                        replace(
+                                message,
+                                args[0],
+                                sender.getName(),
+                                reason
+                        )
                 );
             }
             for (String message : control.getStringList("report-notification-without-reason")) {
                 plugin.getPlayerHandler().announceOnly(
-                        message,
+                        replace(
+                                message,
+                                args[0],
+                                sender.getName(),
+                                reason
+                        ),
                         "purplereports.admin.report-notification"
                 );
 
             }
             return;
         }
-        //TODO: REPORT WITH REASON
+
+        String[] reasonArray = removeFirstArgument(args);
+
+        String reason = convert(reasonArray);
+
+        plugin.getDatabase().createReport(
+                sender.getName(),
+                args[0],
+                reason
+        );
+
         for (String message : control.getStringList("reported-successfully-with-reason")) {
             sender.sendColoredMessage(
-                    message
+                    replace(
+                            message,
+                            args[0],
+                            sender.getName(),
+                            reason
+                    )
             );
         }
         for (String message : control.getStringList("report-notification-with-reason")) {
             plugin.getPlayerHandler().announceOnly(
-                    message,
+                    replace(
+                            message,
+                            args[0],
+                            sender.getName(),
+                            reason
+                    ),
                     "purplereports.admin.report-notification"
             );
 
         }
     }
 
+    public String replace(String message, String reported, String author, String reason) {
+        return message.replace("%user%", reported)
+                .replace("%author%", author)
+                .replace("%reason%", reason);
+    }
+
+    public String replace(String message, String reported, String author) {
+        return message.replace("%user%", reported)
+                .replace("%author%", author);
+    }
+
+    public String convert(String[] args) {
+        StringBuilder builder = new StringBuilder();
+
+        for (String argument : args) {
+            builder.append(argument);
+        }
+
+        return builder.toString();
+    }
+
+    private String[] removeFirstArgument(String[] args) {
+        String[] newArgs = new String[args.length - 1];
+
+        System.arraycopy(args, 1, newArgs, 0, newArgs.length);
+
+        return newArgs;
+    }
 
 }

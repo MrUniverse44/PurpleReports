@@ -27,12 +27,12 @@ public class Database<T> {
 
     private final PurpleReport<T> plugin;
 
-
     private Connection connection;
     private PreparedStatement reportData;
+    private PreparedStatement reportId;
     private PreparedStatement submitReport;
     private PreparedStatement removeReport;
-    private PreparedStatement modifyReport;
+    private PreparedStatement createReport;
 
     public Database(PurpleReport<T> plugin) {
         this.plugin = plugin;
@@ -81,8 +81,28 @@ public class Database<T> {
 
         this.connection = connection;
         this.reportData = connection.prepareStatement("select * from `reports` where `reportId` = ?");
+        this.reportId = connection.prepareStatement("select * from `reports` where `reportedPlayer` = ? and `reporter` = ? and `reason` = ?");
         this.removeReport = connection.prepareStatement("delete from `reports` where `reportId` = ?");
         this.submitReport = connection.prepareStatement("replace into `reports` values (?,?,?,?)");
+        this.createReport = connection.prepareStatement("insert into `reports` (reportedPlayer, reporter, reason) values (?,?,?)");
+    }
+
+    public synchronized int getReportId(String reportedUser, String author, String reason) {
+        try {
+            reportId.clearParameters();
+            reportId.setString(1, reportedUser);
+            reportId.setString(2, author);
+            reportId.setString(3, reason);
+
+            try (ResultSet rs = reportData.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("reportId");
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogs().error("Failed to fetch report data for user " + reportedUser, e);
+        }
+        return 999;
     }
 
     public synchronized ReportData getReportData(int id) {
@@ -117,6 +137,31 @@ public class Database<T> {
         } catch (SQLException e) {
             plugin.getLogs().error("Failed to save report data for id " + data.getId());
             e.printStackTrace();
+        }
+    }
+
+    public void createReport(String author, String reportedUser, String reason) {
+        try {
+            createReport.clearParameters();
+            createReport.setString(1, reportedUser);
+            createReport.setString(2, author);
+            createReport.setString(3, reason);
+
+            createReport.executeUpdate();
+
+            int id = getReportId(reportedUser, author, reason);
+
+            plugin.getReportData().add(
+                    id,
+                    new ReportData(
+                            id,
+                            author,
+                            reason,
+                            reportedUser
+                    )
+            );
+        } catch (SQLException e) {
+            plugin.getLogs().error("Failed to fetch report data for player " + reportedUser, e);
         }
     }
 
