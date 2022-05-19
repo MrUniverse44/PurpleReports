@@ -8,15 +8,19 @@ import dev.mruniverse.purplereports.commons.database.ReportDatabase;
 import dev.mruniverse.purplereports.handler.PlayerHandler;
 import dev.mruniverse.slimelib.SlimePlatform;
 import dev.mruniverse.slimelib.SlimePlugin;
+import dev.mruniverse.slimelib.SlimePluginInformation;
 import dev.mruniverse.slimelib.control.Control;
 import dev.mruniverse.slimelib.input.InputManager;
 import dev.mruniverse.slimelib.loader.BaseSlimeLoader;
 import dev.mruniverse.slimelib.loader.DefaultSlimeLoader;
+import dev.mruniverse.slimelib.logs.SlimeLog;
 import dev.mruniverse.slimelib.logs.SlimeLogs;
 
 import java.io.File;
 
 public class PurpleReport<T> implements SlimePlugin<T> {
+
+    private final SlimePluginInformation slimePluginInformation;
 
     private final BaseSlimeLoader<T> slimeLoader;
 
@@ -34,14 +38,15 @@ public class PurpleReport<T> implements SlimePlugin<T> {
 
     private final T plugin;
 
-    public PurpleReport(SlimeLogs logs, SlimePlatform platform, T plugin, InputManager inputManager, File dataFolder) {
+    public PurpleReport(SlimePlatform platform, T plugin, File dataFolder) {
+        this.slimePluginInformation = new SlimePluginInformation(platform, plugin);
         this.playerHandler = PlayerHandler.fromPlatform(platform, plugin);
-        this.slimeLoader   = new DefaultSlimeLoader<>(this, inputManager);
+        this.slimeLoader   = new DefaultSlimeLoader<>(this, InputManager.createInputManager(platform, plugin));
         this.reportData    = new ReportDatabase();
         this.folder        = dataFolder;
         this.platform      = platform;
         this.plugin        = plugin;
-        this.logs          = logs;
+        this.logs          = SlimeLog.createLogs(platform, this);
 
         getLoader().setFiles(SlimeFile.class);
 
@@ -73,6 +78,11 @@ public class PurpleReport<T> implements SlimePlugin<T> {
 
     public Database<T> getDatabase() {
         return database;
+    }
+
+    @Override
+    public SlimePluginInformation getPluginInformation() {
+        return slimePluginInformation;
     }
 
     @Override
